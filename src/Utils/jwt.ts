@@ -11,7 +11,7 @@ const verifyToken = (token: string, secret: string) => {
   } catch (error: any) {
     return {
         success : false,
-        message : error.message
+        message : error
     }
   }
 };
