@@ -9,4 +9,18 @@ enum ActiveStatus{
     BLOCKED
 }
 
+
 // user enums 
+
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+
+enum CommentsStatus{
+    APPROVED
+    REJECT
+}
