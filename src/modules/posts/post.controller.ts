@@ -4,8 +4,6 @@ import { catchAsync } from "../../Utils/catchAsync";
 import { sendResponse } from "../../Utils/sendResponse";
 import { postService } from "./post.service";
 
-
-
 const createPosts = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.user?.id;
@@ -23,7 +21,7 @@ const createPosts = catchAsync(
 
 const getAllPosts = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await postService.getAllPosts();
+    const result = await postService.getAllPosts(req.query);
 
     sendResponse(res, {
       success: true,

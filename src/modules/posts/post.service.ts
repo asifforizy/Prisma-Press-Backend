@@ -1,5 +1,7 @@
+import { title } from "node:process";
 import { Role } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import { IPostQuery } from "../comments/comments.interface";
 import { ICreatePostPayload, IupdatedPayload } from "./post.interface";
 
 const createPosts = async (payload: ICreatePostPayload, userId: string) => {
@@ -13,12 +15,60 @@ const createPosts = async (payload: ICreatePostPayload, userId: string) => {
   return result;
 };
 
-const getAllPosts = async () => {
+const getAllPosts = async (query: IPostQuery) => {
   const result = await prisma.post.findMany({
+    where: {
+      AND: [
+        query.searchTerm
+          ? {
+              OR: [
+                {
+                  title: {
+                    contains: query.searchTerm,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  content: {
+                    contains: query.searchTerm,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            }
+          : {},
+
+        query.title
+          ? {
+              title: {
+                equals: query.title,
+                mode: "insensitive",
+              },
+            }
+          : {},
+
+        query.content
+          ? {
+              content: {
+                contains: query.content,
+                mode: "insensitive",
+              },
+            }
+          : {},
+      ],
+    },
+
     orderBy: {
       createdAt: "desc",
     },
-    include: { author: { omit: { password: true } } },
+
+    include: {
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+    },
   });
 
   return result;
