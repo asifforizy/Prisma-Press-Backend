@@ -1,52 +1,65 @@
 import { prisma } from "../../lib/prisma";
+import { ICreateCommentPayload, IUpdateCommentPayload } from "./comments.interface";
 
-const createComment = async (payload: any, user: any) => {
-  const result = await prisma.comment.create({
+const createComment = async (
+  payload: ICreateCommentPayload,
+  authorId: string
+) => {
+  return prisma.comment.create({
     data: {
-      content: payload.content,
-      postId: payload.postId,
-      authorId: user.id,
-    },
-  });
-
-  return result;
-};
-
-const getCommentByAuthorId = async (authorId: string) => {
-  const result = await prisma.comment.findMany({
-    where: {
+      ...payload,
       authorId,
     },
     include: {
-      author: true,
-      post: true,
-    },
-    orderBy: {
-      id: "desc",
+      author: {
+        omit: {
+          password: true,
+        },
+      },
     },
   });
+};
 
-  return result;
+const getCommentByAuthorId = async (authorId: string) => {
+  return prisma.comment.findMany({
+    where: {
+      authorId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      post: true,
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
 };
 
 const getCommentByCommentId = async (commentId: string) => {
-  const result = await prisma.comment.findUniqueOrThrow({
+  return prisma.comment.findUniqueOrThrow({
     where: {
       id: commentId,
     },
     include: {
-      author: true,
       post: true,
+      author: {
+        omit: {
+          password: true,
+        },
+      },
     },
   });
-
-  return result;
 };
 
 const updateComment = async (
   commentId: string,
-  payload: any,
-  user: any
+  payload: IUpdateCommentPayload,
+  authorId: string,
+  isAdmin: boolean
 ) => {
   const comment = await prisma.comment.findUniqueOrThrow({
     where: {
@@ -54,23 +67,30 @@ const updateComment = async (
     },
   });
 
-  if (user.role !== "ADMIN" && comment.authorId !== user.id) {
+  if (!isAdmin && comment.authorId !== authorId) {
     throw new Error("You are not authorized to update this comment.");
   }
 
-  const result = await prisma.comment.update({
+  return prisma.comment.update({
     where: {
       id: commentId,
     },
     data: payload,
+    include: {
+      post: true,
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+    },
   });
-
-  return result;
 };
 
 const deleteComment = async (
   commentId: string,
-  user: any
+  authorId: string,
+  isAdmin: boolean
 ) => {
   const comment = await prisma.comment.findUniqueOrThrow({
     where: {
@@ -78,7 +98,7 @@ const deleteComment = async (
     },
   });
 
-  if (user.role !== "ADMIN" && comment.authorId !== user.id) {
+  if (!isAdmin && comment.authorId !== authorId) {
     throw new Error("You are not authorized to delete this comment.");
   }
 
@@ -91,20 +111,23 @@ const deleteComment = async (
   return null;
 };
 
-const moderateComment = async (
-  commentId: string,
-  payload: any
-) => {
-  const result = await prisma.comment.update({
+const moderateComment = async (commentId: string) => {
+  return prisma.comment.update({
     where: {
       id: commentId,
     },
     data: {
-      status: payload.status,
+      isModerated: true,
+    },
+    include: {
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+      post: true,
     },
   });
-
-  return result;
 };
 
 export const commentService = {
