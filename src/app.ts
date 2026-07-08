@@ -6,7 +6,10 @@ import { userRouters } from "./modules/users/user.route";
 import { authRoutes } from "./modules/auth/auth.route";
 import { postRoutes } from "./modules/posts/posts.routes";
 import { commentRoutes } from "./modules/comments/comments.route";
-
+import { notFound } from "./middleware/notFound";
+import { NextFunction } from "express";
+import httpStatus from 'http-status';
+import { globalErrorhandler } from "./middleware/globalErrorhandler";
 
 const app: Application = express();
 app.use(express.json());
@@ -23,16 +26,11 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 app.use("/api/users", userRouters);
-app.use('/api/auth', authRoutes)
-app.use('/api/posts', postRoutes)
-app.use('/api/comments', commentRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes);
 
-
-app.use((req:Request, res:Response)=>{
-  res.status(404).json({
-    success: false,
-    message: "Route not found"
-  })
-})
+app.use(notFound);
+app.use(globalErrorhandler);
 
 export default app;
