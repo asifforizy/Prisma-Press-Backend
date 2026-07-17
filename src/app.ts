@@ -9,7 +9,7 @@ import { commentRoutes } from "./modules/comments/comments.route";
 import { notFound } from "./middleware/notFound";
 import { NextFunction } from "express";
 import httpStatus from 'http-status';
-import { globalErrorhandler } from "./middleware/globalErrorhandler";
+import { globalErrorHandler } from "./middleware/globalErrorhandler";
 
 const app: Application = express();
 app.use(express.json());
